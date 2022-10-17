@@ -1,0 +1,17 @@
+model_version: "0.0.0.0.18"
+build:
+  gpu: true
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+  python_version: "3.8"
+  python_packages:
+    - "einops==0.5.0"
+    - "numpy==1.20.3"
+    - "opencv_python_headless==4.5.5.64"
+    - "torch==1.12.1"
+    - "transformers==4.23.1"
+predict: "predictor.py:SceneRecognizer"
+model_name: "scene-detector"
+private: false
+iteration: "video"

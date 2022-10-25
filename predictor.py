@@ -1,6 +1,6 @@
 from typing import List, Dict
-from sieve.types import FrameSingleObject, SingleObject, BoundingBox, TemporalObject
-from sieve.predictors import TemporalProcessor
+from sieve.types import FrameSingleObject, SingleObject, BoundingBox, Temporal
+from sieve.predictors import TemporalPredictor
 
 import torch
 from transformers import AutoFeatureExtractor, AutoModelForImageClassification
@@ -76,15 +76,15 @@ labels = {
     "66": "wine cellar"
 }
 
-class SceneRecognizer(TemporalProcessor):
+class SceneRecognizer(TemporalPredictor):
     def setup(self):
         self.vit_extractor = AutoFeatureExtractor.from_pretrained('vincentclaes/mit-indoor-scenes')
         self.vit_model = AutoModelForImageClassification.from_pretrained('vincentclaes/mit-indoor-scenes')
         self.vit_model.eval()
     
     def predict(self, frame: FrameSingleObject) -> List[SingleObject]:
-        frame_number = frame.temporal_object.frame_number
-        frame_data = frame.temporal_object.get_array()
+        frame_number = frame.get_temporal().frame_number
+        frame_data = frame.get_temporal().get_array()
         with torch.no_grad():
             inputs = self.vit_extractor(images=frame_data, return_tensors='pt')
             outputs = self.vit_model(**inputs).logits
@@ -96,7 +96,7 @@ class SceneRecognizer(TemporalProcessor):
         
         return [SingleObject(
             cls='scene',
-            temporal_object=TemporalObject(
+            temporal=Temporal(
                 frame_number=frame_number,
                 bounding_box=BoundingBox.from_array([0, 0, frame.width, frame.height]),
                 score=logit_dict[max_key],
